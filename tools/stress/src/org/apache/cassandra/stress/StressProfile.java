@@ -123,7 +123,7 @@ public class StressProfile implements Serializable
     }
 
 
-        private void init(StressYaml yaml) throws RequestValidationException
+    private void init(StressYaml yaml) throws RequestValidationException
     {
         keyspaceName = yaml.keyspace;
         keyspaceCql = yaml.keyspace_definition;
