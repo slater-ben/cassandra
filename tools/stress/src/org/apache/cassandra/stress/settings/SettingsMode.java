@@ -30,6 +30,7 @@ import com.datastax.driver.core.AuthProvider;
 import com.datastax.driver.core.PlainTextAuthProvider;
 import com.datastax.driver.core.ProtocolOptions;
 import com.datastax.driver.core.ProtocolVersion;
+import org.apache.cassandra.stress.util.MultiPrintStream;
 
 public class SettingsMode implements Serializable
 {
@@ -49,8 +50,11 @@ public class SettingsMode implements Serializable
 
     private final String compression;
 
+    private final GroupedOptions options;
+
     public SettingsMode(GroupedOptions options)
     {
+        this.options = options;
         if (options instanceof Cql3Options)
         {
             cqlVersion = CqlVersion.CQL3;
@@ -205,6 +209,21 @@ public class SettingsMode implements Serializable
     }
 
     // CLI Utility Methods
+    public void printSettings(MultiPrintStream out)
+    {
+        out.printf("  API: %s%n", api);
+        out.printf("  Connection Style: %s%n", style);
+        out.printf("  CQL Version: %s%n", cqlVersion);
+        out.printf("  Protocol Version: %s%n", protocolVersion);
+        out.printf("  Username: %s%n", username);
+        out.printf("  Password: %s%n", (password==null?password:"*suppressed*"));
+        out.printf("  Auth Provide Class: %s%n", authProviderClassname);
+        out.printf("  Max Pending Per Connection: %d%n", maxPendingPerConnection);
+        out.printf("  Connections Per Host: %d%n", connectionsPerHost);
+        out.printf("  Compression: %s%n", compression);
+
+    }
+
 
     public static SettingsMode get(Map<String, String[]> clArgs)
     {
