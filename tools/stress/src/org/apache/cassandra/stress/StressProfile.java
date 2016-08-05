@@ -71,6 +71,7 @@ public class StressProfile implements Serializable
     private Map<String, StressYaml.QueryDef> queries;
     public Map<String, StressYaml.TokenRangeQueryDef> tokenRangeQueries;
     private Map<String, String> insert;
+    private boolean schemaCreated=false;
 
     transient volatile TableMetadata tableMetaData;
     transient volatile Set<TokenRange> tokenRanges;
@@ -110,7 +111,7 @@ public class StressProfile implements Serializable
 
         PartitionGenerator generator = newGenerator(stressSettings);
         Distribution visits = stressSettings.insert.visits.get();
-        SchemaInsert tmp = getInsert(null, generator, null, stressSettings); //just calling this to initialize selectchange and partitions vals for calc below
+        SchemaInsert tmp = getInsert(null, generator, null, stressSettings); //just calling this to initialize selectchance and partitions vals for calc below
 
         double minBatchSize = selectchance.get().min() * partitions.get().minValue() * generator.minRowCount * (1d / visits.maxValue());
         double maxBatchSize = selectchance.get().max() * partitions.get().maxValue() * generator.maxRowCount * (1d / visits.minValue());
@@ -203,54 +204,58 @@ public class StressProfile implements Serializable
 
     public void maybeCreateSchema(StressSettings settings)
     {
-        JavaDriverClient client = settings.getJavaDriverClient(false);
-
-        if (keyspaceCql != null)
+        if (!schemaCreated)
         {
-            try
-            {
-                client.execute(keyspaceCql, org.apache.cassandra.db.ConsistencyLevel.ONE);
-            }
-            catch (AlreadyExistsException e)
-            {
-            }
-        }
+            JavaDriverClient client = settings.getJavaDriverClient(false);
 
-        client.execute("use " + keyspaceName, org.apache.cassandra.db.ConsistencyLevel.ONE);
-
-        if (tableCql != null)
-        {
-            try
+            if (keyspaceCql != null)
             {
-                client.execute(tableCql, org.apache.cassandra.db.ConsistencyLevel.ONE);
-            }
-            catch (AlreadyExistsException e)
-            {
-            }
-
-            System.out.println(String.format("Created schema. Sleeping %ss for propagation.", settings.node.nodes.size()));
-            Uninterruptibles.sleepUninterruptibly(settings.node.nodes.size(), TimeUnit.SECONDS);
-        }
-
-        if (extraSchemaDefinitions != null)
-        {
-            for (String extraCql : extraSchemaDefinitions)
-            {
-
                 try
                 {
-                    client.execute(extraCql, org.apache.cassandra.db.ConsistencyLevel.ONE);
+                    client.execute(keyspaceCql, org.apache.cassandra.db.ConsistencyLevel.ONE);
                 }
                 catch (AlreadyExistsException e)
                 {
                 }
             }
 
-            System.out.println(String.format("Created extra schema. Sleeping %ss for propagation.", settings.node.nodes.size()));
-            Uninterruptibles.sleepUninterruptibly(settings.node.nodes.size(), TimeUnit.SECONDS);
-        }
+            client.execute("use " + keyspaceName, org.apache.cassandra.db.ConsistencyLevel.ONE);
 
+            if (tableCql != null)
+            {
+                try
+                {
+                    client.execute(tableCql, org.apache.cassandra.db.ConsistencyLevel.ONE);
+                }
+                catch (AlreadyExistsException e)
+                {
+                }
+
+                System.out.println(String.format("Created schema. Sleeping %ss for propagation.", settings.node.nodes.size()));
+                Uninterruptibles.sleepUninterruptibly(settings.node.nodes.size(), TimeUnit.SECONDS);
+            }
+
+            if (extraSchemaDefinitions != null)
+            {
+                for (String extraCql : extraSchemaDefinitions)
+                {
+
+                    try
+                    {
+                        client.execute(extraCql, org.apache.cassandra.db.ConsistencyLevel.ONE);
+                    }
+                    catch (AlreadyExistsException e)
+                    {
+                    }
+                }
+
+                System.out.println(String.format("Created extra schema. Sleeping %ss for propagation.", settings.node.nodes.size()));
+                Uninterruptibles.sleepUninterruptibly(settings.node.nodes.size(), TimeUnit.SECONDS);
+            }
+        schemaCreated = true;
+        }
         maybeLoadSchemaInfo(settings);
+
     }
 
     public void truncateTable(StressSettings settings)
@@ -571,6 +576,7 @@ public class StressProfile implements Serializable
         {
             synchronized (this)
             {
+                maybeCreateSchema(settings);
                 maybeLoadSchemaInfo(settings);
                 if (generatorFactory == null)
                     generatorFactory = new GeneratorFactory();

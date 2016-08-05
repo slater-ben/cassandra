@@ -50,11 +50,9 @@ public class SettingsMode implements Serializable
 
     private final String compression;
 
-    private final GroupedOptions options;
 
     public SettingsMode(GroupedOptions options)
     {
-        this.options = options;
         if (options instanceof Cql3Options)
         {
             cqlVersion = CqlVersion.CQL3;
@@ -166,8 +164,8 @@ public class SettingsMode implements Serializable
         final OptionSimple user = new OptionSimple("user=", ".+", null, "username", false);
         final OptionSimple password = new OptionSimple("password=", ".+", null, "password", false);
         final OptionSimple authProvider = new OptionSimple("auth-provider=", ".*", null, "Fully qualified implementation of com.datastax.driver.core.AuthProvider", false);
-        final OptionSimple maxPendingPerConnection = new OptionSimple("maxPending=", "[0-9]+", "", "Maximum pending requests per connection", false);
-        final OptionSimple connectionsPerHost = new OptionSimple("connectionsPerHost=", "[0-9]+", "", "Number of connections per host", false);
+        final OptionSimple maxPendingPerConnection = new OptionSimple("maxPending=", "[0-9]+", "128", "Maximum pending requests per connection", false);
+        final OptionSimple connectionsPerHost = new OptionSimple("connectionsPerHost=", "[0-9]+", "8", "Number of connections per host", false);
 
         abstract OptionSimple mode();
         @Override

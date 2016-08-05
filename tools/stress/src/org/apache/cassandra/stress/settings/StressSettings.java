@@ -350,8 +350,11 @@ public class StressSettings implements Serializable
         generate.printSettings(out);
         out.println("Insert:");
         insert.printSettings(out);
-        out.println("Columns:");
-        columns.printSettings(out);
+        if (command.type != Command.USER)
+        {
+            out.println("Columns:");
+            columns.printSettings(out);
+        }
         out.println("Errors:");
         errors.printSettings(out);
         out.println("Log:");
@@ -373,7 +376,8 @@ public class StressSettings implements Serializable
         out.println("TokenRange:");
         tokenRange.printSettings(out);
 
-        if (command.type == Command.USER){
+        if (command.type == Command.USER)
+        {
             out.println();
             out.println("******************** Profile ********************");
             ((SettingsCommandUser) command).profile.printSettings(out, this);

@@ -36,19 +36,17 @@ public class SettingsLog implements Serializable
     }
 
     public final boolean noSummary;
-    public final boolean printSettings;
+    public final boolean noSettings;
     public final File file;
     public final File hdrFile;
     public final int intervalMillis;
     public final Level level;
-    private final Options options;
 
     public SettingsLog(Options options)
     {
-        this.options = options;
 
         noSummary = options.noSummmary.setByUser();
-        printSettings = options.printSettings.setByUser();
+        noSettings = options.noSettings.setByUser();
 
         if (options.outputFile.setByUser())
             file = new File(options.outputFile.value());
@@ -86,7 +84,7 @@ public class SettingsLog implements Serializable
     public static final class Options extends GroupedOptions
     {
         final OptionSimple noSummmary = new OptionSimple("no-summary", "", null, "Disable printing of aggregate statistics at the end of a test", false);
-        final OptionSimple printSettings = new OptionSimple("print-settings", "", null, "Print all settings values at start of test", false);
+        final OptionSimple noSettings = new OptionSimple("no-settings", "", null, "Disable printing of settings values at start of test", false);
         final OptionSimple outputFile = new OptionSimple("file=", ".*", null, "Log to a file", false);
         final OptionSimple hdrOutputFile = new OptionSimple("hdrfile=", ".*", null, "Log to a file", false);
         final OptionSimple interval = new OptionSimple("interval=", "[0-9]+(ms|s|)", "1s", "Log progress every <value> seconds or milliseconds", false);
@@ -95,7 +93,7 @@ public class SettingsLog implements Serializable
         @Override
         public List<? extends Option> options()
         {
-            return Arrays.asList(level, noSummmary, outputFile, hdrOutputFile, interval, printSettings);
+            return Arrays.asList(level, noSummmary, outputFile, hdrOutputFile, interval, noSettings);
         }
     }
 
@@ -103,7 +101,7 @@ public class SettingsLog implements Serializable
     public void printSettings(MultiPrintStream out)
     {
         out.printf("  No Summary: %b%n", noSummary);
-        out.printf("  Print Setting: %b%n", printSettings);
+        out.printf("  Print Setting: %b%n", noSettings);
         out.printf("  File: %s%n", file);
         out.printf("  Interval Millis: %d%n", intervalMillis);
         out.printf("  Level: %s%n", level);

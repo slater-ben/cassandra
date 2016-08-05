@@ -131,7 +131,7 @@ public class SettingsCommandUser extends SettingsCommand
         out.printf("  Command Ratios: %s%n", ratios);
         out.printf("  Command Clustering Distribution: %s%n", options.clustering.getOptionAsString());
         out.printf("  Profile File: %s%n", options.profile.value());
-        // profile.printSettings(out);
+        // profile.noSettings(out);
     }
 
 
